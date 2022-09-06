@@ -20,3 +20,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+# source venv_mapapp/bin/activate
+# cd map_app
+# python manage.py runserver
