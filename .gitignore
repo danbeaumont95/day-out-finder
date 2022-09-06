@@ -1,0 +1,5 @@
+.env
+# social-media-app-venv
+# /mapapp/**/*.env
+venv_mapapp
+/map_app/**/*.env
