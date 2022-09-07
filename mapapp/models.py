@@ -1,9 +1,11 @@
 from django.db import models
-
+import uuid
 # Create your models here.
 
 
 class User(models.Model):
+    id = models.SmallIntegerField(primary_key=True, editable=False)
+
     first_name = models.CharField('First Name', max_length=60)
     last_name = models.CharField('Last Name', max_length=60)
     email = models.EmailField('Email', max_length=100)
