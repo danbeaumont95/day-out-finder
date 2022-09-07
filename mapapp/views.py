@@ -1,3 +1,5 @@
+import json
+from django.core.serializers import json as dan
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -27,6 +29,14 @@ def ListView(request, api_name):
             status=status.HTTP_404_NOT_FOUND,
         )
     if request.method == "GET":
+        if api_name == 'address':
+            test = UserAddress.objects.filter()
+
+            json_serializer = dan.Serializer()
+            json_serialized = json_serializer.serialize(test)
+
+            return Response({'Success': json.loads(json_serialized)})
+
         object_list = object.model.objects.all()
         serializers = object.serializers(object_list, many=True)
         return Response(serializers.data)
@@ -47,7 +57,7 @@ def ListView(request, api_name):
             new_user.save()
             return Response({'Success': 'New user created'})
         if api_name == 'address':
-            print('called123')
+
             bearer_token = request.headers.get('authorization')
 
             if bearer_token is None:
@@ -56,31 +66,30 @@ def ListView(request, api_name):
 
             user_token = UserLoginTokens.objects.filter(
                 access_token=slice).count()
-            print(user_token, 'user_token321')
+
             if user_token == 0 or user_token < 1:
                 return Response({'Error': 'No user found'})
             att = UserLoginTokens.objects.filter(
                 access_token=slice).values('user_id').first()
-            print(att, 'att123')
+
             user = User.objects.filter(id=att['user_id']).first()
-            print(user, 'fuckinguser')
+
             first_line, second_line, town_city, postcode = itemgetter(
                 'first_line', 'second_line', 'town_city', 'postcode'
             )(request.data)
 
-            print(first_line, 'first_line123')
             try:
-
                 created_address = UserAddress.objects.create(
                     first_line=first_line, second_line=second_line, town_city=town_city, postcode=postcode, user=user)
-                print(created_address, 'created_address123')
+
                 created_address.save()
+                print(created_address, 'created_address123')
                 return Response({'Success': 'Address saved'})
             except:
                 return Response({'Error': 'Unable to save address'})
-            # print(created_address, 'created_address1234')
+
         if api_name == 'login':
-            print(request.data, 'request.data123')
+
             user = User.objects.filter(email=request.data['username'])
 
             if not user:
@@ -90,7 +99,6 @@ def ListView(request, api_name):
             user_id = user[0].id
 
             check = check_password(request.data['password'], hashed_password)
-            print(check, 'check123')
 
             if check == False:
                 return Response({'Error': 'No user found with those details'})
