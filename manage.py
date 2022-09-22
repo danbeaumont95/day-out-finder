@@ -24,3 +24,7 @@ if __name__ == '__main__':
 # source venv_mapapp/bin/activate
 # cd map_app
 # python manage.py runserver
+
+# in map_app
+# python3 manage.py makemigrations mapapp
+#  python3 manage.py migrate
