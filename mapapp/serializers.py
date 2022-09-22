@@ -5,7 +5,7 @@ from rest_framework import serializers
 import uuid
 from django.db import models
 # from django.contrib.auth.models import User
-from .models import User, UserLoginTokens
+from .models import User, UserLoginTokens, UserSavedAddresses
 
 
 class LowerCaseEmailField(serializers.EmailField):
@@ -33,3 +33,11 @@ class UserLoginSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserLoginTokens
         fields = ('user', 'access_token', 'refresh_token')
+
+
+class UserSavedAddressesSerializer(serializers.ModelSerializer):
+    user = UserSerializer
+
+    class Meta:
+        model = UserSavedAddresses
+        fields = ('user', 'lat', 'lng')

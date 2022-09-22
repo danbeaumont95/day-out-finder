@@ -28,3 +28,9 @@ class UserAddress(models.Model):
     town_city = models.CharField('Town/City', default=True, max_length=100)
     postcode = models.CharField('Postcode', default=True, max_length=50)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+
+
+class UserSavedAddresses(models.Model):
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    lat = models.FloatField('Latitude', default=None)
+    lng = models.FloatField('Longitude', default=None)

@@ -1,10 +1,13 @@
+from geopy.geocoders import Nominatim
+import googlemaps
+from datetime import datetime
 import json
 from django.core.serializers import json as dan
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
-from .models import User, UserAddress, UserLoginTokens
+from .models import User, UserAddress, UserLoginTokens, UserSavedAddresses
 from .serializers import UserSerializer, UserAddressSerializer, UserLoginSerializer
 from operator import itemgetter
 from collections import namedtuple
@@ -128,3 +131,58 @@ def ListView(request, api_name):
             data=serializers.error,
             status=status.HTTP_201_CREATED
         )
+
+
+"""
+  import googlemaps
+from datetime import datetime
+
+gmaps = googlemaps.Client(key='Add Your Key here')
+
+# Geocoding an address
+geocode_result = gmaps.geocode('1600 Amphitheatre Parkway, Mountain View, CA')
+
+# Look up an address with reverse geocoding
+reverse_geocode_result = gmaps.reverse_geocode((40.714224, -73.961452))
+
+# Request directions via public transit
+now = datetime.now()
+directions_result = gmaps.directions("Sydney Town Hall",
+                                     "Parramatta, NSW",
+                                     mode="transit",
+                                     departure_time=now)
+  """
+
+
+@api_view(["GET", "POST"])
+def save_users_home(request):
+    bearer_token = request.headers.get('authorization')
+
+    if bearer_token is None:
+        return Response({'Error': 'Bearer Token required'})
+    slice = bearer_token[7:]
+
+    user_token = UserLoginTokens.objects.filter(
+        access_token=slice).count()
+
+    if user_token == 0 or user_token < 1:
+        return Response({'Error': 'No user found'})
+    att = UserLoginTokens.objects.filter(
+        access_token=slice).values('user_id').first()
+
+    user = User.objects.filter(id=att['user_id']).first()
+
+    address = request.data['address']
+
+    geolocator = Nominatim(user_agent="new_map_app")
+
+    location = geolocator.geocode(address)
+
+    lat = location.latitude
+
+    lng = location.longitude
+
+    new_address = UserSavedAddresses.objects.create(
+        lat=lat, lng=lng, user=user)
+    new_address.save()
+    return Response({'Success': 'Address saved'})
