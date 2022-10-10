@@ -48,15 +48,29 @@ def ListView(request, api_name):
         data = request.data
         serializers = object.serializers(data=data)
         if api_name == 'user':
+
             first_name, last_name, email, password = itemgetter(
                 'first_name', 'last_name', 'email', 'password')(request.data)
             hashed_password = make_password(password)
+            if len(first_name) < 1:
+                return Response({'Error': 'First name is required'})
+            if len(last_name) < 1:
+                return Response({'Error': 'Last name is required'})
+            if len(email) < 1:
+                return Response({'Error': 'Email is required'})
+            if len(password) < 1:
+                return Response({'Error': 'Password is required'})
+            user_already_exists = User.objects.filter(email=email).count()
+
+            if user_already_exists > 0:
+                return Response({'Error': 'User already exists'})
 
             # first is password to check (req.body.password), 2nd is password in db
             # check = check_password(password, hashed_password)
 
             new_user = User.objects.create(
                 first_name=first_name, last_name=last_name, email=email, password=hashed_password)
+
             new_user.save()
             return Response({'Success': 'New user created'})
         if api_name == 'address':
@@ -92,7 +106,7 @@ def ListView(request, api_name):
                 return Response({'Error': 'Unable to save address'})
 
         if api_name == 'login':
-
+            print(request.data, 'request.data123')
             user = User.objects.filter(email=request.data['username'])
 
             if not user:

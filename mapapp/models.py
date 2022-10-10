@@ -4,9 +4,9 @@ import uuid
 
 
 class User(models.Model):
-    id = models.SmallIntegerField(primary_key=True, editable=False)
+    # id = models.SmallIntegerField(primary_key=True, editable=False)
 
-    first_name = models.CharField('First Name', max_length=60)
+    first_name = models.CharField('First Name', max_length=60, blank=False)
     last_name = models.CharField('Last Name', max_length=60)
     email = models.EmailField('Email', max_length=100)
     password = models.CharField('Password', max_length=120)
@@ -34,3 +34,4 @@ class UserSavedAddresses(models.Model):
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     lat = models.FloatField('Latitude', default=None)
     lng = models.FloatField('Longitude', default=None)
+    name = models.CharField('Name', max_length=100)

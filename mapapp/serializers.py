@@ -40,4 +40,4 @@ class UserSavedAddressesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserSavedAddresses
-        fields = ('user', 'lat', 'lng')
+        fields = ('user', 'lat', 'lng', 'name')
