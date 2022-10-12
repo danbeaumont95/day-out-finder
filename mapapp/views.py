@@ -100,13 +100,13 @@ def ListView(request, api_name):
                     first_line=first_line, second_line=second_line, town_city=town_city, postcode=postcode, user=user)
 
                 created_address.save()
-                print(created_address, 'created_address123')
+
                 return Response({'Success': 'Address saved'})
             except:
                 return Response({'Error': 'Unable to save address'})
 
         if api_name == 'login':
-            print(request.data, 'request.data123')
+
             user = User.objects.filter(email=request.data['username'])
 
             if not user:
@@ -187,16 +187,122 @@ def save_users_home(request):
     user = User.objects.filter(id=att['user_id']).first()
 
     address = request.data['address']
+    name = request.data['name']
 
     geolocator = Nominatim(user_agent="new_map_app")
 
     location = geolocator.geocode(address)
+
+    if location == None:
+        return Response({'Error': 'Invalid location'})
 
     lat = location.latitude
 
     lng = location.longitude
 
     new_address = UserSavedAddresses.objects.create(
-        lat=lat, lng=lng, user=user)
+        lat=lat, lng=lng, user=user, name=name)
     new_address.save()
     return Response({'Success': 'Address saved'})
+
+
+@api_view(['GET', 'POST'])
+def get_my_addresses(request):
+    bearer_token = request.headers.get('authorization')
+
+    if bearer_token is None:
+        return Response({'Error': 'Bearer Token required'})
+    slice = bearer_token[7:]
+
+    user_token = UserLoginTokens.objects.filter(
+        access_token=slice).count()
+
+    if user_token == 0 or user_token < 1:
+        return Response({'Error': 'No user found'})
+    att = UserLoginTokens.objects.filter(
+        access_token=slice).values('user_id').first()
+
+    user = User.objects.filter(id=att['user_id']).first()
+
+    user_addresses = UserAddress.objects.filter(user=2)
+
+    json_serializer = dan.Serializer()
+    json_serialized = json_serializer.serialize(user_addresses)
+
+    jsonify = json.loads(json_serialized)
+
+    fields = jsonify[0]['fields']
+    addresses = {}
+
+    for item in fields:
+        if item != 'user':
+            addresses[item] = fields[item]
+
+    return Response({'Success': addresses})
+
+
+@api_view(['GET'])
+def get_me(request):
+    bearer_token = request.headers.get('authorization')
+
+    if bearer_token is None:
+        return Response({'Error': 'Bearer Token required'})
+    slice = bearer_token[7:]
+
+    user_token = UserLoginTokens.objects.filter(
+        access_token=slice).count()
+
+    if user_token == 0 or user_token < 1:
+        return Response({'Error': 'No user found'})
+    att = UserLoginTokens.objects.filter(
+        access_token=slice).values('user_id').first()
+
+    user = User.objects.filter(id=att['user_id'])
+
+    json_serializer = dan.Serializer()
+
+    json_serialized = json_serializer.serialize(user)
+
+    jsonify = json.loads(json_serialized)
+
+    fields = jsonify[0]['fields']
+
+    user_details = {}
+    for item in fields:
+        if item != 'password':
+            user_details[item] = fields[item]
+
+    return Response({'Success': fields})
+
+
+@api_view(['GET'])
+def get_my_saved_addresses(request):
+    bearer_token = request.headers.get('authorization')
+
+    if bearer_token is None:
+        return Response({'Error': 'Bearer Token required'})
+    slice = bearer_token[7:]
+
+    user_token = UserLoginTokens.objects.filter(
+        access_token=slice).count()
+
+    if user_token == 0 or user_token < 1:
+        return Response({'Error': 'No user found'})
+    att = UserLoginTokens.objects.filter(
+        access_token=slice).values('user_id').first()
+
+    user = UserSavedAddresses.objects.filter(user_id=att['user_id'])
+
+    json_serializer = dan.Serializer()
+
+    json_serialized = json_serializer.serialize(user)
+    jsonify = json.loads(json_serialized)
+
+    addresses = []
+    for index, item in enumerate(jsonify):
+        addresses.append(item['fields'])
+
+    for index, item in enumerate(addresses):
+        del [item['user']]
+
+    return Response({'Success': addresses})
